@@ -1,6 +1,7 @@
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from users.models import CustomUser
 from .models import Booking
 from .serializers import BookingSerializer
 from .utils import check_room_availability
@@ -56,7 +57,7 @@ class BookingReservationAPIView(generics.CreateAPIView):
     authentication_classes = [JWTAuthentication]
 
     def post(self, request, *args, **kwargs):
-        user = request.user
+        user = CustomUser.objects.get(email=request.user.email)
         room_id = request.data.get('room_id')
         start_date = request.data.get('start_date')
         end_date = request.data.get('end_date')

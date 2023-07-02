@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
+from users.serializers import UserSerializer
 from .models import Booking
 from rooms.serializers import RoomSerializer
 
 
 class BookingSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user = UserSerializer()
     room = RoomSerializer()
 
     class Meta:

@@ -20,10 +20,12 @@ class TokenObtainPairView(APIView):
     def post(self, request):
         serializer = TokenObtainPairSerializer(data=request.data)
         if serializer.is_valid():
-            user = CustomUser.objects.get(email=serializer.validated_data['email'])
+            user = CustomUser.objects.get(email=serializer.validated_data["email"])
             refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
+            return Response(
+                {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                }
+            )
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)

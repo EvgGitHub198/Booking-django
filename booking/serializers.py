@@ -5,9 +5,9 @@ from rooms.serializers import RoomSerializer
 
 
 class BookingSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserSerializer(read_only=True)
     room = RoomSerializer()
 
     class Meta:
         model = Booking
-        fields = ['id', 'user', 'room', 'start_date', 'end_date']
+        fields = ["id", "user", "room", "start_date", "end_date"]

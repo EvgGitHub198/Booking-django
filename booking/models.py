@@ -10,5 +10,6 @@ class Booking(models.Model):
     end_date = models.DateField()
 
     def __str__(self):
-        return f"{self.user} | {self.room} room: from {self.start_date} to {self.end_date}"
-
+        return (
+            f"{self.user} | {self.room} room: from {self.start_date} to {self.end_date}"
+        )

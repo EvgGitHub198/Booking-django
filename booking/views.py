@@ -1,7 +1,6 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from rest_framework_simplejwt.authentication import JWTAuthentication
-
 from users.models import CustomUser
 from .models import Booking
 from .serializers import BookingSerializer
@@ -12,7 +11,13 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 
 
-class BookingCreateAPIView(generics.CreateAPIView):
+@extend_schema(
+    tags=["Booking"],
+    description="Search for available rooms based on specified dates and filters",
+    request=BookingSerializer,
+    responses={200: RoomSerializer(many=True)},
+)
+class BookingSearchAPIView(generics.CreateAPIView):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
 
@@ -57,11 +62,14 @@ class BookingCreateAPIView(generics.CreateAPIView):
         return available_rooms
 
 
+@extend_schema(
+    tags=["Booking"], description="Creating a Booking", request=BookingSerializer
+)
 class BookingReservationAPIView(generics.CreateAPIView):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request, *args, **kwargs):
         user = CustomUser.objects.get(email=request.user.email)
         room_id = request.data.get("room_id")
@@ -87,6 +95,9 @@ class BookingReservationAPIView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(
+    tags=["Booking"], description="User's booking list", request=BookingSerializer
+)
 class BookingListAPIView(generics.ListAPIView):
     serializer_class = BookingSerializer
     permission_classes = [IsAuthenticated]
@@ -96,8 +107,12 @@ class BookingListAPIView(generics.ListAPIView):
         return Booking.objects.filter(user=user)
 
 
+@extend_schema(
+    tags=["Booking"], description="Cancel a Booking", request=BookingSerializer
+)
 class BookingCancelAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = BookingSerializer
 
     def delete(self, request, pk):
         try:

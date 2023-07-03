@@ -1,8 +1,13 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics
 from .models import Room
 from .serializers import RoomSerializer
 
 
+@extend_schema(
+    tags=["Rooms"],
+    description="Get a list of rooms",
+)
 class RoomListAPIView(generics.ListAPIView):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
@@ -32,6 +37,10 @@ class RoomListAPIView(generics.ListAPIView):
         return queryset
 
 
+@extend_schema(
+    tags=["Rooms"],
+    description="Get details of a room",
+)
 class RoomDetailAPIView(generics.RetrieveAPIView):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer

@@ -157,7 +157,7 @@ JWT_AUTH = {
 }
 SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=12),
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
 }
 AUTH_USER_MODEL = "users.CustomUser"
 

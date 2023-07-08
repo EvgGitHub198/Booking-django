@@ -1,14 +1,17 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from rooms.models import Room
 from users.models import CustomUser
+from .filters import BookingFilter
 from .models import Booking
 from .serializers import BookingSerializer
-from .utils import check_room_availability
-from rooms.models import Room
+from .utils import check_room_availability, available_rooms
 from rooms.serializers import RoomSerializer
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.filters import OrderingFilter
 
 
 @extend_schema(
@@ -17,49 +20,19 @@ from rest_framework.response import Response
     request=BookingSerializer,
     responses={200: RoomSerializer(many=True)},
 )
-class BookingSearchAPIView(generics.CreateAPIView):
-    queryset = Booking.objects.all()
-    serializer_class = BookingSerializer
+class RoomListAPIView(generics.ListAPIView):
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
+    filterset_class = BookingFilter
 
-    def post(self, request, *args, **kwargs):
-        start_date = request.data.get("start_date")
-        end_date = request.data.get("end_date")
-
-        min_price = request.data.get("min_price")
-        max_price = request.data.get("max_price")
-        capacities = request.data.get("capacity")
-
-        available_rooms = self.get_available_rooms(
-            start_date, end_date, min_price, max_price, capacities
-        )
-
-        serializer = RoomSerializer(available_rooms, many=True)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def get_available_rooms(
-        self, start_date, end_date, min_price, max_price, capacities
-    ):
-        booked_room_ids = Booking.objects.filter(
-            start_date__lte=end_date, end_date__gte=start_date
-        ).values_list("room_id", flat=True)
-
-        available_rooms = Room.objects.exclude(id__in=booked_room_ids)
-
-        if min_price and max_price:
-            available_rooms = available_rooms.filter(
-                price__range=(min_price, max_price)
-            )
-        elif min_price:
-            available_rooms = available_rooms.filter(price__gte=min_price)
-        elif max_price:
-            available_rooms = available_rooms.filter(price__lte=max_price)
-
-        if capacities:
-            capacities_list = capacities.split(",")
-            available_rooms = available_rooms.filter(capacity__in=capacities_list)
-
-        return available_rooms
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+        if start_date and end_date:
+            return available_rooms(start_date, end_date)
+        return queryset
 
 
 @extend_schema(
